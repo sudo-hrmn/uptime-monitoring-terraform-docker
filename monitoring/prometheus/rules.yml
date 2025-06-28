@@ -1,0 +1,58 @@
+groups:
+  - name: website_alerts
+    rules:
+      - alert: WebsiteDown
+        expr: probe_success == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Website {{ $labels.instance }} is down"
+          description: "Website {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: WebsiteSlowResponse
+        expr: probe_duration_seconds > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Website {{ $labels.instance }} is responding slowly"
+          description: "Website {{ $labels.instance }} response time is {{ $value }} seconds."
+
+      - alert: HighErrorRate
+        expr: rate(probe_http_status_code{code!~"2.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.instance }}"
+          description: "Error rate is {{ $value }} errors per second."
+
+  - name: infrastructure_alerts
+    rules:
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus is down"
+          description: "Prometheus has been down for more than 1 minute."
+
+      - alert: BlackboxExporterDown
+        expr: up{job="blackbox-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Blackbox Exporter is down"
+          description: "Blackbox Exporter has been down for more than 1 minute."
+
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alertmanager is down"
+          description: "Alertmanager has been down for more than 1 minute."
